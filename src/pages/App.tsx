@@ -12,6 +12,7 @@ import { ServiceKeys } from '../services/serviceKeys.js';
 import { ThemeKeys, DarkTheme, LightTheme, PineappleTheme } from './../styles/index.js';
 // Types
 import type { IService } from './../services/infrastructure/serviceTypes.js';
+import type { INavigationElement } from '../navigation/navigationTypes.js';
 // Styles
 import 'mapbox-gl/dist/mapbox-gl.css';
 import './../styles/app.style.css';
@@ -82,7 +83,7 @@ const App: React.FC = () => {
             onThemeChange={handleThemeChange}>
             <NavigationProvider
               navigationItems={navigationElements}
-              onInject={[navigationElement => React.lazy(() => getImportableView(navigationElement.importPath))]}>
+              onInject={(navigationElement: INavigationElement) => React.lazy(() => getImportableView(navigationElement.importPath))}>
               <CssBaseline
                 enableColorScheme={true} />
               <RouterPage />
