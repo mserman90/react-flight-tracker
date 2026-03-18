@@ -37,38 +37,60 @@ const App: React.FC = () => {
   const handleThemeChange = (themeName: string) => {
     setThemeName(themeName);
   };
-  const getServices = (): Array<IService> => {
-    return [
-      new RESTService(ServiceKeys.RESTService),
-      new GeospatialService(ServiceKeys.GeospatialService),
-      new OpenSkyAPIService(ServiceKeys.OpenSkyAPIService)
-    ];
+  const handleInjectServices = () => {
+    const services: Array<IService> = [];
+    const restService = new RESTService(ServiceKeys.RESTService);
+    services.push(restService);
+    const openSkyAPIService = new OpenSkyAPIService(ServiceKeys.OpenSkyAPIService,
+      import.meta.env.VITE_REACT_OSKY_CLIENT_ID, import.meta.env.VITE_REACT_OSKY_CLIENT_SECRET);
+    services.push(openSkyAPIService);
+    const geospatialService = new GeospatialService(ServiceKeys.GeospatialService);
+    services.push(geospatialService);
+    return services;
+  };
+  const renderFallback = () => {
+    return (
+      <Box
+        sx={{
+          height: '100vh',
+          width: '100vw',
+          overflow: 'hidden',
+          userSelect: 'none',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          alignContent: 'center',
+          justifyItems: 'center',
+          justifyContent: 'center'
+        }}>
+        <CssBaseline
+          enableColorScheme={true} />
+        <CircularProgress
+          color='primary'
+          size={128} />
+      </Box>
+    );
   };
   return (
-    <ThemeProvider theme={getTheme()}>
-      <CssBaseline />
-      <AppContextProvider
-        onThemeChange={handleThemeChange}
-        onInjectServices={getServices}>
-        <HashRouter>
-          <NavigationProvider
-            navigationElements={navigationElements}
-            getImportableView={getImportableView}>
-            <Suspense fallback={
-              <Box
-                display='flex'
-                justifyContent='center'
-                alignItems='center'
-                minHeight='100vh'>
-                <CircularProgress />
-              </Box>
-            }>
+    <HashRouter>
+      <ThemeProvider
+        theme={getTheme()}>
+        <Suspense
+          fallback={renderFallback()}>
+          <AppContextProvider
+            onInjectServices={handleInjectServices}
+            onThemeChange={handleThemeChange}>
+            <NavigationProvider
+              navigationItems={navigationElements}
+              onInject={[navigationElement => React.lazy(() => getImportableView(navigationElement.importPath))]}>
+              <CssBaseline
+                enableColorScheme={true} />
               <RouterPage />
-            </Suspense>
-          </NavigationProvider>
-        </HashRouter>
-      </AppContextProvider>
-    </ThemeProvider>
+            </NavigationProvider>
+          </AppContextProvider>
+        </Suspense>
+      </ThemeProvider>
+    </HashRouter>
   );
 }
 export default App;
